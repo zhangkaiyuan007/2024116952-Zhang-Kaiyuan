@@ -1,0 +1,33 @@
+梯度一：找出导致编译失败的问题
+1.ProcessingConfig
+threshold == 127; 应该改成 threshold = 127; 
+2.ImageCache类中
+static map<string, Mat> cache; 未在外定义
+应该在类外添加 map<string, Mat> ImageCache::cache;
+3.ImageEnhancer类中
+for(int i = 0; i <= channels.size(); i++)应该改为
+for(int i = 0; i < channels.size(); i++)
+梯度二：找出即使编译通过但仍会导致运行发生错误的问题
+1.ImageROI类中
+若传入的points为空的异常情况，那么minX和minY为INT_MAX，maxX和maxY都为0
+所以得到错误的boundingBox
+2.ImageEnhancer类中
+channel.convertTo(channel, -1, enhancementFactor); 这一行中的-1可能导致深度自动选择错误
+需要指定目标深度，确保数据不会溢出
+3.ImageFliter类中
+bilateralFilter(srcImg, srcImg, config.kernelSize, 
+              config.sigma * 2, config.sigma / 2);
+这里的参数不适用于所有情况，如果出现其他特殊情况会出现运行错误
+梯度三：找出所有的错误包括所有不规范和带有内存泄漏隐患的问题
+1.ImageProcessingPipeline类中内存泄漏
+~ImageProcessingPipeline() {
+        processors.clear();  
+    }这里只调用了processors.clear(),还要删除指向处理器对象的指针。
+2.GeometricTransformer类中
+Mat* processed = new Mat();OpenCV的Mat管理内存，无需手动分配内存。
+3.ImageCache类中
+MAX_CACHE_SIZA定义了但未使用。
+4.在 ImageProcessingPipeline构造函数中
+抛出了的是const char*类型的异常
+而在main函数中捕获的是const std::exception&类型的异常。抛出与捕获不匹配
+应该抛出std::runtime_error类型的异常

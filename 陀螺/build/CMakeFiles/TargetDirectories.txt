@@ -1,0 +1,3 @@
+/home/robert_kaiyuan/鸡架大师/陀螺/build/CMakeFiles/Armor.dir
+/home/robert_kaiyuan/鸡架大师/陀螺/build/CMakeFiles/edit_cache.dir
+/home/robert_kaiyuan/鸡架大师/陀螺/build/CMakeFiles/rebuild_cache.dir
